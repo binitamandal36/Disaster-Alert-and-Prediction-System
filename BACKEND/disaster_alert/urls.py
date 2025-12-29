@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from xml.etree.ElementInclude import include
 from django.contrib import admin
 from django.urls import path
 from core.views import disaster_list
@@ -21,5 +22,6 @@ from core.views import disaster_list
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('disasters/', disaster_list,name='disaster_list'),
+    path('', include('core.urls')),
 ]
 
