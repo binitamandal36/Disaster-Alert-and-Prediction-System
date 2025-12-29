@@ -1,9 +1,13 @@
-from django.shortcuts import render
-from .models import Disaster
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Disaster Alert System</title>
+</head>
+<body>
+    <h1>Welcome to Disaster Alert and Prediction System</h1>
 
-def home(request):
-    return render(request, 'core/home.html')
+    <p>This is the home page.</p>
 
-def disaster_list(request):
-    disasters = Disaster.objects.all()
-    return render(request, 'core/disaster_list.html', {'disasters': disasters})
+    <a href="/disasters/">View Disasters</a>
+</body>
+</html>
