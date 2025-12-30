@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Disaster</title>
+</head>
+<body>
+    <h2>Edit Disaster</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Update</button>
+    </form>
+
+    <br>
+    <a href="{% url 'disaster_list' %}">Back</a>
+</body>
+</html>

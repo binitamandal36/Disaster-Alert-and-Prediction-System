@@ -30,3 +30,12 @@ class Incident(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.disaster_type}"
+    
+    def risk_level(self):
+    if self.severity <= 3:
+        return "LOW"
+    elif self.severity <= 6:
+        return "MEDIUM"
+    else:
+        return "HIGH"
+

@@ -15,6 +15,18 @@
                     Location: {{ disaster.location }}<br>
                     Severity: {{ disaster.severity_level }}<br>
                     Reported on: {{ disaster.date_reported }}<br>
+                    <a href="{% url 'edit_disaster' disaster.id %}">Edit</a> |
+                    <a href="{% url 'delete_disaster' disaster.id %}">Delete</a>
+                    <p><strong>Risk Level:</strong>
+    {% if disaster.risk_level == "HIGH" %}
+        🔴 HIGH ALERT
+    {% elif disaster.risk_level == "MEDIUM" %}
+        🟠 MEDIUM ALERT
+    {% else %}
+        🟢 LOW ALERT
+    {% endif %}
+</p>
+
                     <hr>
                 </li>
             {% endfor %}
