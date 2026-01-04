@@ -68,3 +68,10 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+#my_explanations:
+“My project frontend is built using Create React App.
+Create React App defines react-scripts start as the development server, so the project runs using npm start.
+The npm run dev command is used in Vite or Next.js projects, not in Create React App.
+Since my project uses CRA, npm start is the correct command.”
