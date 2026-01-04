@@ -1,4 +1,4 @@
-#This model stores disaster details with type, location, severity, and timestamp.
+# This model stores disaster details with type, location, severity, and timestamp.
 from django.db import models
 
 DISASTER_TYPES = [
@@ -20,6 +20,14 @@ class Disaster(models.Model):
     def __str__(self):
         return f"{self.title} - {self.location}"
 
+    def risk_level(self):
+        if self.severity_level <= 3:
+            return "LOW"
+        elif self.severity_level <= 6:
+            return "MEDIUM"
+        else:
+            return "HIGH"
+
 
 class Incident(models.Model):
     name = models.CharField(max_length=100)
@@ -30,12 +38,3 @@ class Incident(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.disaster_type}"
-    
-    def risk_level(self):
-    if self.severity <= 3:
-        return "LOW"
-    elif self.severity <= 6:
-        return "MEDIUM"
-    else:
-        return "HIGH"
-
