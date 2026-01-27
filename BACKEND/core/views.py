@@ -18,7 +18,7 @@ def disaster_list(request):
 #Disaster.objects.all(): Fetches all disaster records from DB
 #order_by('-date_reported'): Shows latest disaster first
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 def disaster_api(request):
     disasters = Disaster.objects.all()
     serializer = DisasterSerializer(disasters, many=True)
