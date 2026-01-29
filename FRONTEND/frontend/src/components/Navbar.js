@@ -1,29 +1,49 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 const Navbar = () => {
   return (
-    <nav className="bg-indigo-700 text-white px-6 py-4 shadow-md">
+    <nav className="bg-gray-900 text-white px-6 py-4 shadow-md">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo / Title */}
-        <h1 className="text-xl font-bold">
+        <Link className="text-xl font-bold">
           Disaster Alert System
-        </h1>
+        </Link>
 
         {/* Navigation Links */}
-        <div className="space-x-6">
-          <Link
+        <div className="flex gap-6">
+          <NavLink
             to="/"
-            className="hover:text-indigo-200 transition"
+            className={({ isActive }) =>
+              isActive
+              ?"text-yellow-400 font-semibold"
+              :"hover:text-yellow-300"
+            }
           >
             Home
-          </Link>
+          </NavLink>
 
-          <Link
+          <NavLink
             to="/disasters"
-            className="hover:text-indigo-200 transition"
+            className={({ isActive }) =>
+              isActive
+              ?"text-yellow-400 font-semibold"
+              :"hover:text-yellow-300"
+          }          
           >
             Disasters
-          </Link>
+          </NavLink>
+
+          <NavLink
+            to="/prediction"
+            className={({ isActive }) =>
+            isActive
+              ? "text-yellow-400 font-semibold"
+              : "hover:text-yellow-300"
+  }
+>
+  Prediction
+</NavLink>
+
         </div>
       </div>
     </nav>

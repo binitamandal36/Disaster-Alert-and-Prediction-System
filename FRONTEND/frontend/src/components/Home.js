@@ -22,6 +22,16 @@ const Home = () => {
         >
           View Disaster Alerts
         </Link>
+
+         <a
+            href="http://127.0.0.1:8000/admin/"
+            target="_blank"
+            rel="noreferrer"
+            className="bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-900 transition"
+          >
+            Admin Panel
+          </a>
+          
       </div>
 
       {/* Info Section */}
