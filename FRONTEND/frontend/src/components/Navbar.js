@@ -44,6 +44,11 @@ const Navbar = () => {
   Prediction
 </NavLink>
 
+<Link to="/alerts" className="hover:text-yellow-300">
+  Alerts
+</Link>
+
+
         </div>
       </div>
     </nav>

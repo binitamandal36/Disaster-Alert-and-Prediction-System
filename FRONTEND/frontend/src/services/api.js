@@ -9,3 +9,13 @@ export const getDisasters = async () => {
 
   return response.json();
 };
+
+export const getAlerts = async () => {
+  const response = await fetch(`${API_BASE_URL}/alerts/`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch alerts");
+  }
+
+  return response.json();
+};

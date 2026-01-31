@@ -28,13 +28,17 @@ class Disaster(models.Model):
         else:
             return "HIGH"
 
+class Alert(models.Model):
+    ALERT_LEVELS = (
+        ('LOW', 'Low'),
+        ('MEDIUM', 'Medium'),
+        ('HIGH', 'High'),
+    )
 
-class Incident(models.Model):
-    name = models.CharField(max_length=100)
-    disaster_type = models.CharField(max_length=50, choices=DISASTER_TYPES)
-    location = models.CharField(max_length=200)
-    description = models.TextField()
-    reported_at = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    level = models.CharField(max_length=10, choices=ALERT_LEVELS)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.name} - {self.disaster_type}"
+        return f"{self.title} - {self.level}"

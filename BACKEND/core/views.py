@@ -6,6 +6,10 @@ from .serializers import DisasterSerializer
 from .forms import DisasterForm
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
+from rest_framework.generics import ListAPIView
+from .models import Alert
+from .serializers import AlertSerializer
+
 
 def home(request):
     return render(request, 'core/home.html')
@@ -52,3 +56,24 @@ def delete_disaster(request, id):
     disaster = get_object_or_404(Disaster, id=id)
     disaster.delete()
     return redirect('disaster_list')
+
+class AlertListView(ListAPIView):
+    queryset = Alert.objects.order_by('-created_at')
+    serializer_class = AlertSerializer
+
+def create_alert(severity, disaster_title):
+    if severity <= 3:
+        level = "LOW"
+        message = "Low risk detected. Stay aware."
+    elif severity <= 6:
+        level = "MEDIUM"
+        message = "Moderate risk. Be prepared."
+    else:
+        level = "HIGH"
+        message = "High risk! Immediate attention required."
+
+    Alert.objects.create(
+        title=f"{disaster_title} Alert",
+        message=message,
+        level=level
+    )    
