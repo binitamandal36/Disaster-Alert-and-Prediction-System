@@ -1,5 +1,7 @@
 # This model stores disaster details with type, location, severity, and timestamp.
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 DISASTER_TYPES = [
     ('Flood', 'Flood'),
@@ -29,16 +31,38 @@ class Disaster(models.Model):
             return "HIGH"
 
 class Alert(models.Model):
-    ALERT_LEVELS = (
-        ('LOW', 'Low'),
-        ('MEDIUM', 'Medium'),
-        ('HIGH', 'High'),
+    disaster = models.ForeignKey(
+        Disaster,
+        on_delete=models.CASCADE,
+        related_name="alerts"
     )
-
-    title = models.CharField(max_length=200)
-    message = models.TextField()
-    level = models.CharField(max_length=10, choices=ALERT_LEVELS)
+    message = models.CharField(max_length=255)
+    alert_level = models.CharField(
+        max_length=20,
+        choices=[
+            ("LOW", "Low"),
+            ("MEDIUM", "Medium"),
+            ("HIGH", "High"),
+        ]
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.title} - {self.level}"
+        return f"{self.alert_level} alert for {self.disaster.title}"
+
+@receiver(post_save, sender=Disaster)
+def create_alert(sender, instance, created, **kwargs):
+    if created:
+        if instance.severity_level >= 7:
+            level = "HIGH"
+        elif instance.severity_level >= 4:
+            level = "MEDIUM"
+        else:
+            level = "LOW"
+
+        Alert.objects.create(
+            disaster=instance,
+            alert_level=level,
+            message=f"{level} risk alert for {instance.title} in {instance.location}"
+        )
+

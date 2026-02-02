@@ -1,29 +1,56 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getAlerts } from "../services/api";
+import AlertBanner from "./AlertBanner";
 
 const Home = () => {
+  const [alerts, setAlerts] = useState([]);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    getAlerts()
+      .then((data) => setAlerts(data))
+      .catch((err) => setError(err.message));
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 to-blue-600 text-white">
-      
+
       {/* Hero Section */}
       <div className="flex flex-col items-center justify-center text-center px-6 py-32">
+
         <h1 className="text-5xl font-bold mb-6">
           Disaster Alert & Prediction System
         </h1>
+
+        {/* 🔴 ALERT SECTION */}
+        <div className="w-full max-w-3xl mb-6">
+          {error && (
+            <p className="text-red-300 mb-4">
+              Error loading alerts
+            </p>
+          )}
+
+          {alerts.length > 0 &&
+            alerts.map((alert) => (
+              <AlertBanner key={alert.id} alert={alert} />
+            ))}
+        </div>
 
         <p className="text-lg max-w-2xl mb-10 text-gray-200">
           A real-time disaster monitoring system that helps users stay informed
           about floods, earthquakes, landslides, fires, and other natural hazards.
         </p>
 
-        <Link
-          to="/disasters"
-          className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition"
-        >
-          View Disaster Alerts
-        </Link>
+        <div className="flex gap-4 flex-wrap justify-center">
+          <Link
+            to="/disasters"
+            className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition"
+          >
+            View Disaster Alerts
+          </Link>
 
-         <a
+          <a
             href="http://127.0.0.1:8000/admin/"
             target="_blank"
             rel="noreferrer"
@@ -31,7 +58,7 @@ const Home = () => {
           >
             Admin Panel
           </a>
-          
+        </div>
       </div>
 
       {/* Info Section */}
