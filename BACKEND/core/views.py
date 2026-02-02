@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView
 from .models import Alert
 from .serializers import AlertSerializer
+from django.core.mail import send_mail
 
 
 def home(request):
@@ -22,11 +23,32 @@ def disaster_list(request):
 #Disaster.objects.all(): Fetches all disaster records from DB
 #order_by('-date_reported'): Shows latest disaster first
 
-@api_view(['GET','POST'])
+@api_view(['POST'])
 def disaster_api(request):
-    disasters = Disaster.objects.all()
-    serializer = DisasterSerializer(disasters, many=True)
-    return Response(serializer.data)
+    serializer = DisasterSerializer(data=request.data)
+
+    if serializer.is_valid():
+        disaster = serializer.save()
+
+        if disaster.severity_level >= 7:
+            send_mail(
+                subject="🚨 HIGH RISK DISASTER ALERT",
+                message=f"""
+High Risk Disaster Reported!
+
+Title: {disaster.title}
+Location: {disaster.location}
+Severity: {disaster.severity_level}
+
+Please stay alert and follow safety guidelines.
+""",
+                from_email=None,
+                recipient_list=["user@example.com"],
+            )
+
+        return Response(serializer.data, status=201)
+
+    return Response(serializer.errors, status=400)
 
 def add_disaster(request):
     if request.method == 'POST':

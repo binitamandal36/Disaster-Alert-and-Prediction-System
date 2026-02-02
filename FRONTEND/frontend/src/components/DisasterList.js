@@ -89,8 +89,9 @@ const DisasterList = () => {
         {filteredDisasters.map(disaster => (
           <div
             key={disaster.id}
-            className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition"
+            className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-2 transition"
           >
+
                         {/*Title */}
             <h2 className="text-xl font-semibold mb-2">
               {disaster.title}

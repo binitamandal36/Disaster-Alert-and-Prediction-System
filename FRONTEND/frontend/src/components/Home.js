@@ -43,21 +43,25 @@ const Home = () => {
         </p>
 
         <div className="flex gap-4 flex-wrap justify-center">
-          <Link
-            to="/disasters"
-            className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition"
-          >
-            View Disaster Alerts
-          </Link>
+         <Link
+  to="/disasters"
+  className="bg-red-500 hover:bg-red-600 hover:scale-105 shadow-lg hover:shadow-red-500/50
+             text-white px-8 py-4 rounded-full text-lg font-semibold transition duration-300"
+>
+  View Disaster Alerts
+</Link>
+
 
           <a
-            href="http://127.0.0.1:8000/admin/"
-            target="_blank"
-            rel="noreferrer"
-            className="bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-900 transition"
-          >
-            Admin Panel
-          </a>
+  href="http://127.0.0.1:8000/admin/"
+  target="_blank"
+  rel="noreferrer"
+  className="mt-4 bg-gray-800 hover:bg-black hover:scale-105
+             text-white px-6 py-3 rounded-lg font-semibold shadow-md transition"
+>
+  Admin Panel
+</a>
+
         </div>
       </div>
 
@@ -65,7 +69,7 @@ const Home = () => {
       <div className="bg-white text-gray-800 py-16 px-8">
         <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8 text-center">
 
-          <div className="p-6 shadow rounded-lg">
+          <div className="p-6 shadow rounded-lg hover:shadow-xl hover:-translate-y-2 transition bg-white">
             <h3 className="text-xl font-bold mb-2">Live Monitoring</h3>
             <p>
               Access real-time disaster information collected and managed
@@ -73,7 +77,7 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="p-6 shadow rounded-lg">
+          <div className="p-6 shadow rounded-lg hover:shadow-xl hover:-translate-y-2 transition bg-white">
             <h3 className="text-xl font-bold mb-2">Risk Alerts</h3>
             <p>
               Severity-based alerts help users quickly understand disaster risk
@@ -81,7 +85,7 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="p-6 shadow rounded-lg">
+          <div className="p-6 shadow rounded-lg hover:shadow-xl hover:-translate-y-2 transition bg-white">
             <h3 className="text-xl font-bold mb-2">User Friendly</h3>
             <p>
               Clean and simple interface built with React and Tailwind CSS.

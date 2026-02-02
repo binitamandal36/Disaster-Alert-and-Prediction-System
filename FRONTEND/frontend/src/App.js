@@ -5,6 +5,8 @@ import DisasterList from "./components/DisasterList";
 import Navbar from "./components/Navbar";
 import Prediction from "./components/Prediction";
 import Alerts from "./components/Alerts";
+import Footer from "./components/Footer";
+import About from "./components/About";
 
 function App() {
   return (
@@ -15,7 +17,9 @@ function App() {
         <Route path="/disasters" element={<DisasterList />} />
         <Route path="/prediction" element={<Prediction />} />
         <Route path="/alerts" element={<Alerts />} />
+        <Route path="/about" element={<About />} />
       </Routes>
+      <Footer />
     </>
   );
 }

@@ -18,6 +18,10 @@ from django.contrib import admin
 from django.urls import path, include
 from core.views import disaster_list
 
+admin.site.site_header = "Disaster Alert Admin Panel"
+admin.site.site_title = "Disaster Alert System"
+admin.site.index_title = "Emergency Management Dashboard"
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('disasters/', disaster_list,name='disaster_list'),
