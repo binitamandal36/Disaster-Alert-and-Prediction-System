@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import home, disaster_list
+
 from . import views
 from .views import AlertListView
 
@@ -11,4 +11,5 @@ urlpatterns = [
     path('delete/<int:id>/', views.delete_disaster, name='delete_disaster'),
     path('api/disasters/', views.disaster_api, name='disaster_api'),
     path("api/alerts/", AlertListView.as_view(), name="alerts"),
+    path("api/predict/", views.predict_risk, name="predict_risk"),
 ]

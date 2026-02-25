@@ -4,38 +4,33 @@ import { getAlerts } from "../services/api";
 import AlertBanner from "./AlertBanner";
 
 const Home = () => {
-  const [alerts, setAlerts] = useState([]);
-  const [error, setError] = useState(null);
+   const [showAlert, setShowAlert] = useState(true);
+   const [alert, setAlert] = useState(null);
 
-  useEffect(() => {
-    getAlerts()
-      .then((data) => setAlerts(data))
-      .catch((err) => setError(err.message));
-  }, []);
+ useEffect(() => {
+  getAlerts().then(data => {
+    if (data.length > 0) {
+      setAlert(data[0]); // latest alert
+    }
+  });
+
+  const timer = setTimeout(() => {
+    setShowAlert(false);
+  }, 10000);
+
+  return () => clearTimeout(timer);
+}, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 to-blue-600 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white">
 
       {/* Hero Section */}
       <div className="flex flex-col items-center justify-center text-center px-6 py-32">
 
-        <h1 className="text-5xl font-bold mb-6">
+        <h1 className="text-5xl font-extrabold mb-6 tracking-wide">
           Disaster Alert & Prediction System
         </h1>
-
-        {/* 🔴 ALERT SECTION */}
-        <div className="w-full max-w-3xl mb-6">
-          {error && (
-            <p className="text-red-300 mb-4">
-              Error loading alerts
-            </p>
-          )}
-
-          {alerts.length > 0 &&
-            alerts.map((alert) => (
-              <AlertBanner key={alert.id} alert={alert} />
-            ))}
-        </div>
+        <AlertBanner />
 
         <p className="text-lg max-w-2xl mb-10 text-gray-200">
           A real-time disaster monitoring system that helps users stay informed
@@ -50,8 +45,6 @@ const Home = () => {
 >
   View Disaster Alerts
 </Link>
-
-
           <a
   href="http://127.0.0.1:8000/admin/"
   target="_blank"

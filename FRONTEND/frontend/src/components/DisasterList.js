@@ -9,10 +9,18 @@ const DisasterList = () => {
   const [typeFilter, setTypeFilter] = useState("");
 
   useEffect(() => {
-    getDisasters()
-      .then(data => setDisasters(data))
-      .catch(err => setError(err.message));
-      setLoading(false);
+    const fetchDisasters = async () => {
+      try {
+        const data = await getDisasters();
+        setDisasters(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDisasters();
   }, []);
 
   if (loading) {
@@ -72,9 +80,8 @@ const DisasterList = () => {
           <option value="">All Types</option>
           <option value="Earthquake">Earthquake</option>
           <option value="Flood">Flood</option>
-          <option value="Hurricane">Hurricane</option>
           <option value="Fire">Fire</option>
-          <option value="Rainfall">Rainfall</option>
+          <option value="Cyclone">Cyclone</option>
           <option value="Landslide">Landslide</option>
         </select>
       </div>

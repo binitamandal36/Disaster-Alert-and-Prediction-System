@@ -1,15 +1,12 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.shortcuts import render
-from .models import Disaster
-from .serializers import DisasterSerializer
-from .forms import DisasterForm
-from django.shortcuts import redirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.generics import ListAPIView
-from .models import Alert
-from .serializers import AlertSerializer
 from django.core.mail import send_mail
+
+from .forms import DisasterForm
+from .models import Alert, Disaster, DISASTER_TYPES
+from .serializers import AlertSerializer, DisasterSerializer
 
 
 def home(request):
@@ -20,11 +17,17 @@ def disaster_list(request):
     disasters = Disaster.objects.all()
     return render(request, 'core/disaster_list.html', {'disasters': disasters})
 
-#Disaster.objects.all(): Fetches all disaster records from DB
-#order_by('-date_reported'): Shows latest disaster first
-
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 def disaster_api(request):
+    """
+    GET  -> Return list of all recorded disasters (latest first).
+    POST -> Create a new disaster entry and trigger any related alerts.
+    """
+    if request.method == "GET":
+        disasters = Disaster.objects.all().order_by("-date_reported")
+        serializer = DisasterSerializer(disasters, many=True)
+        return Response(serializer.data, status=200)
+
     serializer = DisasterSerializer(data=request.data)
 
     if serializer.is_valid():
@@ -32,16 +35,14 @@ def disaster_api(request):
 
         if disaster.severity_level >= 7:
             send_mail(
-                subject="🚨 HIGH RISK DISASTER ALERT",
-                message=f"""
-High Risk Disaster Reported!
-
-Title: {disaster.title}
-Location: {disaster.location}
-Severity: {disaster.severity_level}
-
-Please stay alert and follow safety guidelines.
-""",
+                subject="HIGH RISK DISASTER ALERT",
+                message=(
+                    "High Risk Disaster Reported!\n\n"
+                    f"Title: {disaster.title}\n"
+                    f"Location: {disaster.location}\n"
+                    f"Severity: {disaster.severity_level}\n\n"
+                    "Please stay alert and follow safety guidelines."
+                ),
                 from_email=None,
                 recipient_list=["user@example.com"],
             )
@@ -83,19 +84,68 @@ class AlertListView(ListAPIView):
     queryset = Alert.objects.order_by('-created_at')
     serializer_class = AlertSerializer
 
-def create_alert(severity, disaster_title):
-    if severity <= 3:
-        level = "LOW"
-        message = "Low risk detected. Stay aware."
-    elif severity <= 6:
-        level = "MEDIUM"
-        message = "Moderate risk. Be prepared."
-    else:
-        level = "HIGH"
-        message = "High risk! Immediate attention required."
 
-    Alert.objects.create(
-        title=f"{disaster_title} Alert",
-        message=message,
-        level=level
-    )    
+@api_view(["POST"])
+def predict_risk(request):
+    """
+    Lightweight prediction endpoint.
+
+    Accepts basic context about a potential disaster scenario and returns
+    a computed risk level and human-readable advice without storing data.
+
+    Expected payload:
+    {
+        "disaster_type": "Flood" | "Earthquake" | "Landslide" | "Fire" | "Cyclone",
+        "location": "Some place",
+        "severity_level": 1-10
+    }
+    """
+    data = request.data or {}
+
+    disaster_type = data.get("disaster_type")
+    location = data.get("location", "").strip()
+    severity_raw = data.get("severity_level")
+
+    valid_types = {choice for choice, _ in DISASTER_TYPES}
+    if disaster_type not in valid_types:
+        return Response(
+            {"detail": "Invalid or missing disaster_type."},
+            status=400,
+        )
+
+    try:
+        severity = int(severity_raw)
+    except (TypeError, ValueError):
+        return Response(
+            {"detail": "severity_level must be an integer between 1 and 10."},
+            status=400,
+        )
+
+    if not 1 <= severity <= 10:
+        return Response(
+            {"detail": "severity_level must be between 1 (lowest) and 10 (highest)."},
+            status=400,
+        )
+
+    if severity <= 3:
+        risk_level = "LOW"
+        advice = "Risk is currently low. Stay informed and monitor updates."
+    elif severity <= 6:
+        risk_level = "MEDIUM"
+        advice = "Moderate risk. Prepare an emergency kit and review evacuation routes."
+    else:
+        risk_level = "HIGH"
+        advice = (
+            "High risk detected. Follow local authority guidance and be ready "
+            "to evacuate if necessary."
+        )
+
+    response_payload = {
+        "disaster_type": disaster_type,
+        "location": location or "Not specified",
+        "severity_level": severity,
+        "risk_level": risk_level,
+        "advice": advice,
+    }
+
+    return Response(response_payload, status=200)
