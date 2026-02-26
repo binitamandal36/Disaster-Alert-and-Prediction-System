@@ -80,9 +80,15 @@ const DisasterList = () => {
           <option value="">All Types</option>
           <option value="Earthquake">Earthquake</option>
           <option value="Flood">Flood</option>
+          <option value="Landslide">Landslide</option>
           <option value="Fire">Fire</option>
           <option value="Cyclone">Cyclone</option>
-          <option value="Landslide">Landslide</option>
+          <option value="Tsunami">Tsunami</option>
+          <option value="Drought">Drought</option>
+          <option value="Storm">Storm</option>
+          <option value="Avalanche">Avalanche</option>
+          <option value="Volcano">Volcano</option>
+          <option value="Heatwave">Heatwave</option>
         </select>
       </div>
 

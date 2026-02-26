@@ -5,19 +5,19 @@ const AlertBanner = () => {
   const [alert, setAlert] = useState(null);
 
   useEffect(() => {
-  const fetchAlert = async () => {
-    try {
-      const data = await getAlerts();
-      if (data.length > 0) {
-        setAlert(data[0]); // latest alert
+    const fetchAlert = async () => {
+      try {
+        const data = await getAlerts();
+        if (data.length > 0) {
+          setAlert(data[0]); // latest alert
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    };
 
-  fetchAlert();
-}, []);
+    fetchAlert();
+  }, []);
 
 
   if (!alert) return null;
@@ -28,7 +28,14 @@ const AlertBanner = () => {
       <p className="text-sm">
         {alert.title} – {alert.message}
       </p>
-      <p className="text-xs mt-1">📍 {alert.location}</p>
+      <p className="text-xs mt-1">
+        📍 {alert.location}{" "}
+        {alert.created_at && (
+          <span className="ml-2">
+            • {new Date(alert.created_at).toLocaleString()}
+          </span>
+        )}
+      </p>
     </div>
   );
 };

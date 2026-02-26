@@ -4,11 +4,17 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 DISASTER_TYPES = [
-    ('Flood', 'Flood'),
-    ('Earthquake', 'Earthquake'),
-    ('Landslide', 'Landslide'),
-    ('Fire', 'Fire'),
-    ('Cyclone', 'Cyclone'),
+    ("Flood", "Flood"),
+    ("Earthquake", "Earthquake"),
+    ("Landslide", "Landslide"),
+    ("Fire", "Fire"),
+    ("Cyclone", "Cyclone"),
+    ("Tsunami", "Tsunami"),
+    ("Drought", "Drought"),
+    ("Storm", "Storm"),
+    ("Avalanche", "Avalanche"),
+    ("Volcano", "Volcano"),
+    ("Heatwave", "Heatwave"),
 ]
 
 class Disaster(models.Model):

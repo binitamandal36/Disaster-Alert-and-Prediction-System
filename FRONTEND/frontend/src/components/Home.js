@@ -1,25 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAlerts } from "../services/api";
 import AlertBanner from "./AlertBanner";
 
 const Home = () => {
-   const [showAlert, setShowAlert] = useState(true);
-   const [alert, setAlert] = useState(null);
+  const [showAlert, setShowAlert] = useState(true);
 
- useEffect(() => {
-  getAlerts().then(data => {
-    if (data.length > 0) {
-      setAlert(data[0]); // latest alert
-    }
-  });
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowAlert(false);
+    }, 8000);
 
-  const timer = setTimeout(() => {
-    setShowAlert(false);
-  }, 10000);
-
-  return () => clearTimeout(timer);
-}, []);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white">
@@ -28,33 +20,31 @@ const Home = () => {
       <div className="flex flex-col items-center justify-center text-center px-6 py-32">
 
         <h1 className="text-5xl font-extrabold mb-6 tracking-wide">
-          Disaster Alert & Prediction System
+          Disaster Alert System
         </h1>
-        <AlertBanner />
+        {showAlert && <AlertBanner />}
 
         <p className="text-lg max-w-2xl mb-10 text-gray-200">
-          A real-time disaster monitoring system that helps users stay informed
-          about floods, earthquakes, landslides, fires, and other natural hazards.
+          A real-time disaster monitoring portal that helps the public stay
+          informed about floods, earthquakes, landslides, fires, and other
+          natural hazards recorded by emergency operators.
         </p>
 
         <div className="flex gap-4 flex-wrap justify-center">
-         <Link
-  to="/disasters"
-  className="bg-red-500 hover:bg-red-600 hover:scale-105 shadow-lg hover:shadow-red-500/50
+          <Link
+            to="/disasters"
+            className="bg-red-500 hover:bg-red-600 hover:scale-105 shadow-lg hover:shadow-red-500/50
              text-white px-8 py-4 rounded-full text-lg font-semibold transition duration-300"
->
-  View Disaster Alerts
-</Link>
-          <a
-  href="http://127.0.0.1:8000/admin/"
-  target="_blank"
-  rel="noreferrer"
-  className="mt-4 bg-gray-800 hover:bg-black hover:scale-105
-             text-white px-6 py-3 rounded-lg font-semibold shadow-md transition"
->
-  Admin Panel
-</a>
-
+          >
+            View Disaster Dashboard
+          </Link>
+          <Link
+            to="/alerts"
+            className="bg-emerald-500 hover:bg-emerald-600 hover:scale-105 shadow-lg hover:shadow-emerald-500/50
+             text-white px-8 py-4 rounded-full text-lg font-semibold transition duration-300"
+          >
+            View Latest Alerts
+          </Link>
         </div>
       </div>
 

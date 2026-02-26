@@ -1,22 +1,23 @@
 import { Link, NavLink } from "react-router-dom";
 
 const Navbar = () => {
+  const baseLinkClass = "hover:text-yellow-300";
+  const activeLinkClass = "text-yellow-400 font-semibold";
+
   return (
     <nav className="bg-gray-900 text-white px-6 py-4 shadow-md">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo / Title */}
-        <Link className="text-xl font-bold">
+        <Link to="/" className="text-xl font-bold">
           Disaster Alert System
         </Link>
 
-        {/* Navigation Links */}
-        <div className="flex gap-6">
+        {/* Navigation Links - public can only view data */}
+        <div className="flex gap-6 items-center">
           <NavLink
             to="/"
             className={({ isActive }) =>
-              isActive
-              ?"text-yellow-400 font-semibold"
-              :"hover:text-yellow-300"
+              isActive ? activeLinkClass : baseLinkClass
             }
           >
             Home
@@ -25,30 +26,29 @@ const Navbar = () => {
           <NavLink
             to="/disasters"
             className={({ isActive }) =>
-              isActive
-              ?"text-yellow-400 font-semibold"
-              :"hover:text-yellow-300"
-          }          
+              isActive ? activeLinkClass : baseLinkClass
+            }
           >
             Disasters
           </NavLink>
 
           <NavLink
-            to="/prediction"
+            to="/alerts"
             className={({ isActive }) =>
-            isActive
-              ? "text-yellow-400 font-semibold"
-              : "hover:text-yellow-300"
-  }
->
-  Prediction
-</NavLink>
+              isActive ? activeLinkClass : baseLinkClass
+            }
+          >
+            Alerts
+          </NavLink>
 
-<Link to="/alerts" className="hover:text-yellow-300">
-  Alerts
-</Link>
-
-
+          <NavLink
+            to="/admin/login"
+            className={({ isActive }) =>
+              isActive ? activeLinkClass : baseLinkClass
+            }
+          >
+            Admin
+          </NavLink>
         </div>
       </div>
     </nav>

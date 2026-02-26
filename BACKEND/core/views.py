@@ -1,8 +1,16 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
-from rest_framework.generics import ListAPIView
+from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.generics import (
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from .forms import DisasterForm
 from .models import Alert, Disaster, DISASTER_TYPES
@@ -85,67 +93,96 @@ class AlertListView(ListAPIView):
     serializer_class = AlertSerializer
 
 
+@csrf_exempt
 @api_view(["POST"])
-def predict_risk(request):
+def admin_login(request):
     """
-    Lightweight prediction endpoint.
-
-    Accepts basic context about a potential disaster scenario and returns
-    a computed risk level and human-readable advice without storing data.
-
-    Expected payload:
-    {
-        "disaster_type": "Flood" | "Earthquake" | "Landslide" | "Fire" | "Cyclone",
-        "location": "Some place",
-        "severity_level": 1-10
-    }
+    Authenticate an admin user using Django's built-in auth system.
+    On success, a session is created and can be reused by subsequent admin API calls.
     """
-    data = request.data or {}
+    username = (request.data.get("username") or "").strip()
+    password = request.data.get("password") or ""
 
-    disaster_type = data.get("disaster_type")
-    location = data.get("location", "").strip()
-    severity_raw = data.get("severity_level")
-
-    valid_types = {choice for choice, _ in DISASTER_TYPES}
-    if disaster_type not in valid_types:
+    if not username or not password:
         return Response(
-            {"detail": "Invalid or missing disaster_type."},
+            {"detail": "Username and password are required."},
             status=400,
         )
 
-    try:
-        severity = int(severity_raw)
-    except (TypeError, ValueError):
+    user = authenticate(request, username=username, password=password)
+
+    if user is None or not user.is_staff:
         return Response(
-            {"detail": "severity_level must be an integer between 1 and 10."},
+            {"detail": "Invalid credentials or not authorized as admin."},
             status=400,
         )
 
-    if not 1 <= severity <= 10:
+    login(request, user)
+    return Response(
+        {
+            "username": user.username,
+            "is_staff": user.is_staff,
+        },
+        status=200,
+    )
+
+
+@csrf_exempt
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def admin_logout(request):
+    """
+    Log out the currently authenticated admin user.
+    """
+    logout(request)
+    return Response({"success": True}, status=200)
+
+
+@api_view(["GET"])
+def admin_me(request):
+    """
+    Return basic information about the currently authenticated admin user.
+    Used by the frontend to keep admin sessions in sync.
+    """
+    user = request.user
+    if user.is_authenticated:
         return Response(
-            {"detail": "severity_level must be between 1 (lowest) and 10 (highest)."},
-            status=400,
+            {
+                "isAuthenticated": True,
+                "username": user.username,
+                "is_staff": getattr(user, "is_staff", False),
+            },
+            status=200,
         )
 
-    if severity <= 3:
-        risk_level = "LOW"
-        advice = "Risk is currently low. Stay informed and monitor updates."
-    elif severity <= 6:
-        risk_level = "MEDIUM"
-        advice = "Moderate risk. Prepare an emergency kit and review evacuation routes."
-    else:
-        risk_level = "HIGH"
-        advice = (
-            "High risk detected. Follow local authority guidance and be ready "
-            "to evacuate if necessary."
-        )
+    return Response({"isAuthenticated": False}, status=200)
 
-    response_payload = {
-        "disaster_type": disaster_type,
-        "location": location or "Not specified",
-        "severity_level": severity,
-        "risk_level": risk_level,
-        "advice": advice,
-    }
 
-    return Response(response_payload, status=200)
+class AdminDisasterListCreate(ListCreateAPIView):
+    """
+    Admin-only endpoint to list and create disasters.
+    """
+
+    queryset = Disaster.objects.all().order_by("-date_reported")
+    serializer_class = DisasterSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class AdminDisasterDetail(RetrieveUpdateDestroyAPIView):
+    """
+    Admin-only endpoint to retrieve, update, or delete a single disaster.
+    """
+
+    queryset = Disaster.objects.all().order_by("-date_reported")
+    serializer_class = DisasterSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class AdminAlertList(ListAPIView):
+    """
+    Admin-only view of alerts, ordered from newest to oldest.
+    """
+
+    queryset = Alert.objects.order_by("-created_at")
+    serializer_class = AlertSerializer
+    permission_classes = [IsAuthenticated]

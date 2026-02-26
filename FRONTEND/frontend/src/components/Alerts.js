@@ -4,11 +4,21 @@ import { getAlerts } from "../services/api";
 const Alerts = () => {
   const [alerts, setAlerts] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getAlerts()
-      .then(data => setAlerts(data))
-      .catch(err => setError(err.message));
+    const fetchAlerts = async () => {
+      try {
+        const data = await getAlerts();
+        setAlerts(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAlerts();
   }, []);
 
   const getColor = (level) => {
@@ -21,6 +31,10 @@ const Alerts = () => {
     return <p className="text-red-600 text-center mt-6">{error}</p>;
   }
 
+  if (loading) {
+    return <p className="text-center mt-6">Loading alerts...</p>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <h1 className="text-3xl font-bold text-center mb-8">
@@ -28,6 +42,12 @@ const Alerts = () => {
       </h1>
 
       <div className="space-y-4 max-w-3xl mx-auto">
+        {alerts.length === 0 && (
+          <p className="text-center text-gray-500">
+            No alerts have been generated yet.
+          </p>
+        )}
+
         {alerts.map(alert => (
           <div
             key={alert.id}
@@ -38,6 +58,11 @@ const Alerts = () => {
             <p className="text-sm mt-2">
               Level: <b>{alert.level}</b>
             </p>
+            {alert.created_at && (
+              <p className="text-xs text-gray-700 mt-1">
+                Reported at: {new Date(alert.created_at).toLocaleString()}
+              </p>
+            )}
           </div>
         ))}
       </div>
