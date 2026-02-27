@@ -1,9 +1,11 @@
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.core.mail import send_mail
 
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.generics import (
     ListAPIView,
     ListCreateAPIView,
@@ -15,6 +17,19 @@ from rest_framework.response import Response
 from .forms import DisasterForm
 from .models import Alert, Disaster, DISASTER_TYPES
 from .serializers import AlertSerializer, DisasterSerializer
+
+from django.db.models import Q
+from django.utils import timezone
+
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    """
+    Session authentication class that skips DRF's built-in CSRF enforcement.
+    We rely on Django's login/session and protect these endpoints by login only.
+    """
+
+    def enforce_csrf(self, request):
+        return
 
 
 def home(request):
@@ -89,12 +104,28 @@ def delete_disaster(request, id):
     return redirect('disaster_list')
 
 class AlertListView(ListAPIView):
-    queryset = Alert.objects.order_by('-created_at')
     serializer_class = AlertSerializer
+
+    def get_queryset(self):
+        """
+        Public alerts list: only show alerts whose associated disaster is still active
+        (valid_until is today or in the future) or has no expiry set.
+        """
+        today = timezone.now().date()
+        base_qs = Alert.objects.select_related("disaster")
+        return (
+            base_qs.filter(
+                Q(disaster__valid_until__isnull=True)
+                | Q(disaster__valid_until__gte=today)
+            )
+            .order_by("-created_at")
+        )
 
 
 @csrf_exempt
 @api_view(["POST"])
+@authentication_classes([])  # no DRF auth -> no CSRF enforcement here
+@permission_classes([])
 def admin_login(request):
     """
     Authenticate an admin user using Django's built-in auth system.
@@ -129,6 +160,7 @@ def admin_login(request):
 
 @csrf_exempt
 @api_view(["POST"])
+@authentication_classes([CsrfExemptSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def admin_logout(request):
     """
@@ -139,6 +171,8 @@ def admin_logout(request):
 
 
 @api_view(["GET"])
+@authentication_classes([CsrfExemptSessionAuthentication])
+@permission_classes([])
 def admin_me(request):
     """
     Return basic information about the currently authenticated admin user.
@@ -158,6 +192,7 @@ def admin_me(request):
     return Response({"isAuthenticated": False}, status=200)
 
 
+@method_decorator(csrf_exempt, name="dispatch")
 class AdminDisasterListCreate(ListCreateAPIView):
     """
     Admin-only endpoint to list and create disasters.
@@ -165,9 +200,11 @@ class AdminDisasterListCreate(ListCreateAPIView):
 
     queryset = Disaster.objects.all().order_by("-date_reported")
     serializer_class = DisasterSerializer
+    authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]
 
 
+@method_decorator(csrf_exempt, name="dispatch")
 class AdminDisasterDetail(RetrieveUpdateDestroyAPIView):
     """
     Admin-only endpoint to retrieve, update, or delete a single disaster.
@@ -175,9 +212,11 @@ class AdminDisasterDetail(RetrieveUpdateDestroyAPIView):
 
     queryset = Disaster.objects.all().order_by("-date_reported")
     serializer_class = DisasterSerializer
+    authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]
 
 
+@method_decorator(csrf_exempt, name="dispatch")
 class AdminAlertList(ListAPIView):
     """
     Admin-only view of alerts, ordered from newest to oldest.
@@ -185,4 +224,5 @@ class AdminAlertList(ListAPIView):
 
     queryset = Alert.objects.order_by("-created_at")
     serializer_class = AlertSerializer
+    authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]

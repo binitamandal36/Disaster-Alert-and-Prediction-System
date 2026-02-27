@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import Alerts from "./components/Alerts";
 import Footer from "./components/Footer";
 import About from "./components/About";
+import Contact from "./components/Contact";
 import AdminLogin from "./components/AdminLogin";
 import AdminDashboard from "./components/AdminDashboard";
 
@@ -18,6 +19,7 @@ function App() {
         <Route path="/disasters" element={<DisasterList />} />
         <Route path="/alerts" element={<Alerts />} />
         <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>

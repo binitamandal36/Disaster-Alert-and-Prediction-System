@@ -24,6 +24,11 @@ class Disaster(models.Model):
     severity_level = models.IntegerField()
     description = models.TextField()
     date_reported = models.DateTimeField(auto_now_add=True)
+    valid_until = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date until which this disaster and its alerts are considered active.",
+    )
 
     def __str__(self):
         return f"{self.title} - {self.location}"

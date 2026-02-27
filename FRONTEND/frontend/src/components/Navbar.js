@@ -42,6 +42,24 @@ const Navbar = () => {
           </NavLink>
 
           <NavLink
+            to="/about"
+            className={({ isActive }) =>
+              isActive ? activeLinkClass : baseLinkClass
+            }
+          >
+            About
+          </NavLink>
+
+          <NavLink
+            to="/contact"
+            className={({ isActive }) =>
+              isActive ? activeLinkClass : baseLinkClass
+            }
+          >
+            Contact
+          </NavLink>
+
+          <NavLink
             to="/admin/login"
             className={({ isActive }) =>
               isActive ? activeLinkClass : baseLinkClass

@@ -16,6 +16,7 @@ const emptyForm = {
   location: "",
   severity_level: 5,
   description: "",
+  valid_until: "",
 };
 
 const AdminDashboard = () => {
@@ -75,10 +76,15 @@ const AdminDashboard = () => {
     setLoading(true);
 
     try {
+      const payload = { ...form };
+      if (!payload.valid_until) {
+        delete payload.valid_until;
+      }
+
       if (editingId) {
-        await updateAdminDisaster(editingId, form);
+        await updateAdminDisaster(editingId, payload);
       } else {
-        await createAdminDisaster(form);
+        await createAdminDisaster(payload);
       }
       setForm(emptyForm);
       setEditingId(null);
@@ -98,6 +104,7 @@ const AdminDashboard = () => {
       location: disaster.location,
       severity_level: disaster.severity_level,
       description: disaster.description,
+       valid_until: disaster.valid_until || "",
     });
   };
 
@@ -226,6 +233,23 @@ const AdminDashboard = () => {
                   onChange={handleChange}
                   placeholder="e.g., Sudurpachim, coastal region"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Valid until (optional)
+                </label>
+                <input
+                  type="date"
+                  name="valid_until"
+                  className="w-full border rounded-lg px-3 py-2"
+                  value={form.valid_until}
+                  onChange={handleChange}
+                />
+                <p className="text-[11px] text-gray-500 mt-1">
+                  After this date, the alert will automatically stop showing on
+                  the public alerts list and home banner.
+                </p>
               </div>
 
               <div>
