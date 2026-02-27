@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.core.mail import send_mail
+import os
 
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
@@ -15,8 +15,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .forms import DisasterForm
-from .models import Alert, Disaster, DISASTER_TYPES
-from .serializers import AlertSerializer, DisasterSerializer
+from .models import Alert, Disaster, DISASTER_TYPES, NotificationSubscription
+from .serializers import AlertSerializer, DisasterSerializer, NotificationSubscriptionSerializer
 
 from django.db.models import Q
 from django.utils import timezone
@@ -54,22 +54,7 @@ def disaster_api(request):
     serializer = DisasterSerializer(data=request.data)
 
     if serializer.is_valid():
-        disaster = serializer.save()
-
-        if disaster.severity_level >= 7:
-            send_mail(
-                subject="HIGH RISK DISASTER ALERT",
-                message=(
-                    "High Risk Disaster Reported!\n\n"
-                    f"Title: {disaster.title}\n"
-                    f"Location: {disaster.location}\n"
-                    f"Severity: {disaster.severity_level}\n\n"
-                    "Please stay alert and follow safety guidelines."
-                ),
-                from_email=None,
-                recipient_list=["user@example.com"],
-            )
-
+        serializer.save()
         return Response(serializer.data, status=201)
 
     return Response(serializer.errors, status=400)
@@ -226,3 +211,73 @@ class AdminAlertList(ListAPIView):
     serializer_class = AlertSerializer
     authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]
+
+
+# ---------------------------
+# Public notifications APIs
+# ---------------------------
+
+@csrf_exempt
+@api_view(["GET"])
+@authentication_classes([])  # public
+@permission_classes([])
+def notifications_vapid_public_key(request):
+    """
+    Returns VAPID public key used for Web Push subscriptions.
+    """
+    return Response({"publicKey": os.environ.get("VAPID_PUBLIC_KEY")}, status=200)
+
+
+@csrf_exempt
+@api_view(["POST"])
+@authentication_classes([])  # public
+@permission_classes([])
+def notifications_subscribe(request):
+    """
+    Subscribe to receive alert notifications via Email / SMS / Web Push.
+    """
+    serializer = NotificationSubscriptionSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=400)
+
+    data = serializer.validated_data
+    email = data.get("email")
+    phone = data.get("phone")
+
+    # Upsert by email or phone when available (push-only subscriptions create new rows).
+    if email:
+        sub, _ = NotificationSubscription.objects.update_or_create(
+            email=email, defaults=data
+        )
+    elif phone:
+        sub, _ = NotificationSubscription.objects.update_or_create(
+            phone=phone, defaults=data
+        )
+    else:
+        sub = NotificationSubscription.objects.create(**data)
+
+    return Response(NotificationSubscriptionSerializer(sub).data, status=201)
+
+
+@csrf_exempt
+@api_view(["POST"])
+@authentication_classes([])  # public
+@permission_classes([])
+def notifications_unsubscribe(request):
+    """
+    Unsubscribe using email or phone.
+    """
+    email = (request.data.get("email") or "").strip() or None
+    phone = (request.data.get("phone") or "").strip() or None
+
+    if not email and not phone:
+        return Response({"detail": "Provide email or phone to unsubscribe."}, status=400)
+
+    qs = NotificationSubscription.objects.filter(is_active=True)
+    if email:
+        qs = qs.filter(email=email)
+    if phone:
+        qs = qs.filter(phone=phone)
+
+    updated = qs.update(is_active=False)
+    return Response({"success": True, "updated": updated}, status=200)

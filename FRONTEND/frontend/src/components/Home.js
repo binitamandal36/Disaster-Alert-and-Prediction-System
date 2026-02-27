@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AlertBanner from "./AlertBanner";
+import NotificationSubscribe from "./NotificationSubscribe";
 
 const Home = () => {
   const [showAlert, setShowAlert] = useState(true);
@@ -179,6 +180,8 @@ const Home = () => {
           </Link>
         </div>
       </div>
+
+      <NotificationSubscribe />
 
     </div>
   );

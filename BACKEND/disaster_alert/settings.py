@@ -128,17 +128,29 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# CORS and email configuration are environment-aware so they can be hardened in production.
+# CORS and email configuration
 CORS_ALLOW_ALL_ORIGINS = os.environ.get("CORS_ALLOW_ALL_ORIGINS", "True").lower() == "true"
 
+# --- Email (configured for real SMTP instead of console) ---
+# For college/demo you can use a Gmail account:
+# 1. Turn on 2‑Step Verification on your Google account.
+# 2. Create an App Password for \"Mail\" and paste it below.
+# 3. Put your Gmail address in EMAIL_HOST_USER.
+#
+# You can also override all of these with environment variables in production.
 EMAIL_BACKEND = os.environ.get(
     "DJANGO_EMAIL_BACKEND",
-    "django.core.mail.backends.console.EmailBackend",
+    "django.core.mail.backends.smtp.EmailBackend",
 )
-DEFAULT_FROM_EMAIL = os.environ.get(
-    "DJANGO_DEFAULT_FROM_EMAIL",
-    "disasteralert@system.com",
-)
+
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() == "true"
+
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "yourgmail@gmail.com")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "your_app_password_here")
+
+DEFAULT_FROM_EMAIL = os.environ.get("DJANGO_DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 
 # keep your existing imports
 

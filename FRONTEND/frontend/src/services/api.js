@@ -56,6 +56,40 @@ export const getAlerts = async () => {
   return response.json();
 };
 
+// Public notifications APIs
+export const getVapidPublicKey = async () => {
+  const response = await fetch(`${API_BASE_URL}/notifications/vapid-public-key/`);
+
+  if (!response.ok) {
+    throw new Error("Failed to load push configuration.");
+  }
+
+  return response.json();
+};
+
+export const subscribeNotifications = async (payload) => {
+  const response = await fetch(`${API_BASE_URL}/notifications/subscribe/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    let message = "Failed to subscribe for notifications.";
+    try {
+      const body = await response.json();
+      if (body && body.detail) message = body.detail;
+    } catch {
+      // ignore parse error
+    }
+    throw new Error(message);
+  }
+
+  return response.json();
+};
+
 // Admin authentication helpers (Django session-based)
 export const loginAdmin = async (username, password) => {
   const response = await fetch(`${API_BASE_URL}/admin/login/`, {

@@ -61,6 +61,36 @@ class Alert(models.Model):
     def __str__(self):
         return f"{self.alert_level} alert for {self.disaster.title}"
 
+
+class NotificationSubscription(models.Model):
+    """
+    Public users can subscribe to receive alert notifications via Email / SMS / Web Push.
+    """
+
+    MIN_LEVEL_CHOICES = [
+        ("LOW", "Low"),
+        ("MEDIUM", "Medium"),
+        ("HIGH", "High"),
+    ]
+
+    email = models.EmailField(null=True, blank=True)
+    phone = models.CharField(max_length=25, null=True, blank=True)
+    push_subscription = models.JSONField(null=True, blank=True)
+
+    wants_email = models.BooleanField(default=True)
+    wants_sms = models.BooleanField(default=False)
+    wants_push = models.BooleanField(default=False)
+
+    min_level = models.CharField(max_length=20, choices=MIN_LEVEL_CHOICES, default="LOW")
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        label = self.email or self.phone or "push-only"
+        return f"Subscription({label})"
+
 @receiver(post_save, sender=Disaster)
 def create_alert(sender, instance, created, **kwargs):
     if created:
@@ -77,3 +107,19 @@ def create_alert(sender, instance, created, **kwargs):
             message=f"{level} risk alert for {instance.title} in {instance.location}"
         )
 
+
+@receiver(post_save, sender=Alert)
+def notify_on_alert(sender, instance, created, **kwargs):
+    """
+    When a new alert is created, notify subscribers (best-effort).
+    """
+    if not created:
+        return
+
+    try:
+        from .notifications import notify_subscribers
+
+        notify_subscribers(instance)
+    except Exception:
+        # Never break alert creation if notifications fail.
+        return
