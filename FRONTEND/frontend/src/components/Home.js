@@ -123,13 +123,7 @@ const Home = () => {
               sirens, and monitoring systems with sensors—help minimize loss of human lives
               and support coordinated response.
             </p>
-            <a
-              href="#"
-              className="inline-flex items-center gap-2 text-red-600 hover:text-red-700 font-medium mb-6"
-            >
-              <span className="inline-block w-6 h-6 bg-red-100 rounded flex items-center justify-center text-red-600 text-xs font-bold">PDF</span>
-              Early warning of tsunamis, tornadoes, and other natural disasters
-            </a>
+            
             <Link
               to="/contact"
               className="inline-block bg-amber-800 hover:bg-amber-900 text-white px-6 py-3 rounded-lg font-semibold transition"
