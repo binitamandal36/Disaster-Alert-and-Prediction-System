@@ -113,7 +113,7 @@ const Contact = () => {
               <ul className="space-y-4 text-gray-700">
                 <li className="flex gap-3">
                   <span className="text-red-600 font-bold shrink-0">Address</span>
-                  <span>[Your office address]</span>
+                  <span>BCA Department, [Your College Name]</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-red-600 font-bold shrink-0">Email</span>
@@ -130,8 +130,8 @@ const Contact = () => {
               </ul>
             </div>
             <p className="text-sm text-gray-600">
-              Disaster Alert System is an academic project. For project or viva-related
-              questions, reach out using the form or details above.
+              Disaster Alert System is a BCA 6th semester academic project inspired by real
+              early warning and notification solutions.
             </p>
             <div className="rounded-xl overflow-hidden shadow-lg border border-gray-200">
               <img

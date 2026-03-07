@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { getAlerts } from "../services/api";
+import AlertCard from "./AlertCard";
 
 const Alerts = () => {
   const [alerts, setAlerts] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [userLocation, setUserLocation] = useState("");
 
   useEffect(() => {
     const fetchAlerts = async () => {
@@ -21,50 +23,60 @@ const Alerts = () => {
     fetchAlerts();
   }, []);
 
-  const getColor = (level) => {
-    if (level === "LOW") return "bg-green-100 text-green-700";
-    if (level === "MEDIUM") return "bg-yellow-100 text-yellow-700";
-    return "bg-red-100 text-red-700";
-  };
-
   if (error) {
-    return <p className="text-red-600 text-center mt-6">{error}</p>;
+    return (
+      <div className="min-h-screen bg-slate-950 text-red-400 flex items-center justify-center px-4">
+        <p>{error}</p>
+      </div>
+    );
   }
 
   if (loading) {
-    return <p className="text-center mt-6">Loading alerts...</p>;
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+        <p className="text-sm text-slate-300">Loading alerts...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold text-center mb-8">
-        Disaster Alerts
-      </h1>
+    <div className="min-h-screen bg-slate-950 text-white px-6 py-10">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">
+              Current disaster alerts
+            </h1>
+            <p className="text-sm text-slate-300 max-w-xl">
+              Alerts are generated automatically from the latest disasters recorded
+              in the control centre.
+            </p>
+          </div>
+          <div className="w-full md:w-64">
+            <label className="block text-xs font-semibold text-slate-300 mb-1">
+              Highlight alerts near this location
+            </label>
+            <input
+              type="text"
+              value={userLocation}
+              onChange={(e) => setUserLocation(e.target.value)}
+              placeholder="e.g. Kathmandu"
+              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+          </div>
+        </div>
 
-      <div className="space-y-4 max-w-3xl mx-auto">
-        {alerts.length === 0 && (
-          <p className="text-center text-gray-500">
+        {alerts.length === 0 ? (
+          <p className="text-center text-slate-400 mt-10">
             No alerts have been generated yet.
           </p>
-        )}
-
-        {alerts.map(alert => (
-          <div
-            key={alert.id}
-            className={`p-4 rounded-lg shadow ${getColor(alert.level)}`}
-          >
-            <h2 className="text-xl font-semibold">{alert.title}</h2>
-            <p>{alert.message}</p>
-            <p className="text-sm mt-2">
-              Level: <b>{alert.level}</b>
-            </p>
-            {alert.created_at && (
-              <p className="text-xs text-gray-700 mt-1">
-                Reported at: {new Date(alert.created_at).toLocaleString()}
-              </p>
-            )}
+        ) : (
+          <div className="grid md:grid-cols-2 gap-5">
+            {alerts.map((alert) => (
+              <AlertCard key={alert.id} alert={alert} userLocation={userLocation} />
+            ))}
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

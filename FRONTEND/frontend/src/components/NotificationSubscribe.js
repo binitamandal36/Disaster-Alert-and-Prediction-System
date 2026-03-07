@@ -154,6 +154,21 @@ const NotificationSubscribe = () => {
                 />
                 SMS
               </label>
+
+              <div className="ml-auto">
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Minimum alert level
+                </label>
+                <select
+                  value={minLevel}
+                  onChange={(e) => setMinLevel(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-xs"
+                >
+                  <option value="LOW">Low (all alerts)</option>
+                  <option value="MEDIUM">Medium &amp; High</option>
+                  <option value="HIGH">High only</option>
+                </select>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-3">
@@ -163,6 +178,14 @@ const NotificationSubscribe = () => {
                 className="bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold px-6 py-3 rounded-lg transition"
               >
                 Subscribe
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={enablePush}
+                className="bg-gray-900 hover:bg-black disabled:opacity-60 text-white font-semibold px-6 py-3 rounded-lg transition"
+              >
+                Enable Push Notifications
               </button>
             </div>
 

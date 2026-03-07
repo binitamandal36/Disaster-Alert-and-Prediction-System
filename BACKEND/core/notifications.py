@@ -34,13 +34,22 @@ def _build_alert_text(alert) -> Tuple[str, str]:
 
 
 def _send_email(to_email: str, subject: str, body: str) -> None:
-    send_mail(
-        subject=subject,
-        message=body,
-        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
-        recipient_list=[to_email],
-        fail_silently=True,
-    )
+    """
+    Send an email using Django's SMTP backend.
+    Any failure is printed to the console so it is visible during demo.
+    """
+    try:
+        send_mail(
+            subject=subject,
+            message=body,
+            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+            recipient_list=[to_email],
+            fail_silently=False,
+        )
+        print(f"[EMAIL] sent to={to_email} subject={subject!r}")
+    except Exception as exc:
+        # Do not propagate – alert creation must not fail – but show a clear hint.
+        print(f"[EMAIL:ERROR] to={to_email} error={exc}")
 
 
 def _send_sms(to_phone: str, body: str) -> None:

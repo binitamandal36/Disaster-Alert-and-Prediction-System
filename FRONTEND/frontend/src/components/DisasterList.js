@@ -24,8 +24,12 @@ const DisasterList = () => {
   }, []);
 
   if (loading) {
-  return <p className="text-center mt-10">Loading...</p>;
-}
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+        <p className="text-sm text-slate-300">Loading disasters...</p>
+      </div>
+    );
+  }
 
   const getRiskBadge = (severity) => {
     if (severity <= 3) {
@@ -45,7 +49,11 @@ const DisasterList = () => {
 
   
   if (error) {
-    return <p className="text-red-600 text-center mt-10">Error: {error}</p>;
+    return (
+      <div className="min-h-screen bg-slate-950 text-red-400 flex items-center justify-center px-4">
+        <p>Error: {error}</p>
+      </div>
+    );
   }
 
   const filteredDisasters = disasters.filter(d => {
@@ -60,20 +68,23 @@ const DisasterList = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold text-center mb-10">
-        Disaster Alert Dashboard
+    <div className="min-h-screen bg-slate-950 text-white p-6">
+      <h1 className="text-3xl font-bold text-center mb-2">
+        Disaster dashboard
       </h1>
+      <p className="text-center text-slate-300 mb-8 text-sm">
+        Overview of all disasters recorded by the control centre.
+      </p>
       <div className="flex flex-col md:flex-row gap-4 mb-8 max-w-4xl mx-auto">
         <input
           type="text"
           placeholder="Search by title or location..."
-          className="w-full p-3 border rounded-lg"
+          className="w-full p-3 border border-slate-700 bg-slate-900 rounded-lg text-sm text-white placeholder:text-slate-500"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <select
-          className="flex-1 p-3 rounded-lg border border-gray-300"
+          className="flex-1 p-3 rounded-lg border border-slate-700 bg-slate-900 text-sm"
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
         >
@@ -94,30 +105,30 @@ const DisasterList = () => {
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredDisasters.length === 0 && (
-          <p className="text-center text-gray-500 col-span-full">
-          No disasters found.
+          <p className="text-center text-slate-400 col-span-full">
+            No disasters found.
           </p>
-      )}
+        )}
 
         {filteredDisasters.map(disaster => (
           <div
             key={disaster.id}
-            className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-2 transition"
+            className="bg-slate-900 p-6 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-2 transition border border-slate-700"
           >
 
                         {/*Title */}
-            <h2 className="text-xl font-semibold mb-2">
+            <h2 className="text-xl font-semibold mb-2 text-white">
               {disaster.title}
             </h2>
 
-            <p className="text-gray-600"><b>Type:</b> {disaster.disaster_type}</p>
-            <p className="text-gray-600"><b>Location:</b> {disaster.location}</p>
-            <p className="text-gray-600"><b>Severity:</b> {disaster.severity_level}</p>
+            <p className="text-slate-200"><b>Type:</b> {disaster.disaster_type}</p>
+            <p className="text-slate-200"><b>Location:</b> {disaster.location}</p>
+            <p className="text-slate-200"><b>Severity:</b> {disaster.severity_level}</p>
 
             <div className="mt-4 flex items-center gap-2">
                                 {/*Risk Badge */}
               <span
-              className={`inline-block px-3 py-1 text-sm font-semibold rounded-full mb-3 ${getRiskBadge(
+              className={`inline-block px-3 py-1 text-xs font-semibold rounded-full mb-3 ${getRiskBadge(
                 disaster.severity_level
               )}`}
             >
@@ -125,15 +136,15 @@ const DisasterList = () => {
             </span>
 
                             {/*Info */}
-            <p className="text-gray-700">
+            <p className="text-slate-200 text-sm">
               <b>Type:</b> {disaster.disaster_type}
             </p>
-            <p className="text-gray-700">
+            <p className="text-slate-200 text-sm">
               <b>Location:</b> {disaster.location}
             </p>
 
                           {/*Description */}
-            <p className="text-gray-600 mt-3 line-clamp-3">
+            <p className="text-slate-300 mt-3 text-sm line-clamp-3">
               {disaster.description}
             </p>
             </div>

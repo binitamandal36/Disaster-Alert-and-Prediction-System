@@ -224,8 +224,15 @@ class AdminAlertList(ListAPIView):
 def notifications_vapid_public_key(request):
     """
     Returns VAPID public key used for Web Push subscriptions.
+    For demo purposes, if VAPID_PUBLIC_KEY is not configured in the
+    environment, we return a static test key so that the frontend
+    can complete the subscription flow without errors.
     """
-    return Response({"publicKey": os.environ.get("VAPID_PUBLIC_KEY")}, status=200)
+    public_key = os.environ.get("VAPID_PUBLIC_KEY")
+    if not public_key:
+        # This is a demo-only value, not suitable for production.
+        public_key = "BDEMO_VAPID_PUBLIC_KEY_FOR_COLLEGE_PROJECT_1234567890"
+    return Response({"publicKey": public_key}, status=200)
 
 
 @csrf_exempt
