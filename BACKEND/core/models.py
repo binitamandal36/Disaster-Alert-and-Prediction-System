@@ -21,6 +21,10 @@ class Disaster(models.Model):
     title = models.CharField(max_length=200)
     disaster_type = models.CharField(max_length=50, choices=DISASTER_TYPES)
     location = models.CharField(max_length=200)
+
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
     severity_level = models.IntegerField()
     description = models.TextField()
     date_reported = models.DateTimeField(auto_now_add=True)

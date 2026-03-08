@@ -9,6 +9,7 @@ import About from "./components/About";
 import Contact from "./components/Contact";
 import AdminLogin from "./components/AdminLogin";
 import AdminDashboard from "./components/AdminDashboard";
+import DisasterMap from "./components/DisasterMap";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/map" element={<DisasterMap />} />
         </Routes>
         <Footer />
       </main>

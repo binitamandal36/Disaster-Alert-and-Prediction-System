@@ -7,14 +7,24 @@ class DisasterAdmin(admin.ModelAdmin):
         'title',
         'disaster_type',
         'location',
+        'latitude',
+        'longitude',
         'severity_level',
         'date_reported'
     )
     list_filter = ('disaster_type', 'severity_level')
     search_fields = ('title', 'location')
     ordering = ('-date_reported',)
-
-
+    fields = (
+        'title',
+        'disaster_type',
+        'location',
+        'latitude',
+        'longitude',
+        'severity_level',
+        'description',
+        'valid_until'
+    )
 @admin.register(Alert)
 class AlertAdmin(admin.ModelAdmin):
     list_display = (

@@ -50,6 +50,12 @@ const Navbar = () => {
           >
             Contact
           </NavLink>
+          <Link
+  to="/map"
+  className="bg-emerald-600 hover:bg-emerald-700 px-7 py-3 rounded-full text-sm md:text-base font-semibold shadow-lg transition"
+>
+  View Disaster Map
+</Link>
           <NavLink
             to="/admin/login"
             className={({ isActive }) =>
