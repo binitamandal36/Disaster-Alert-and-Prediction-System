@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AlertBanner from "./AlertBanner";
 import NotificationSubscribe from "./NotificationSubscribe";
+import DisasterMap from "./DisasterMap";
 
 const Home = () => {
   const [showAlert, setShowAlert] = useState(true);
@@ -90,6 +91,18 @@ const Home = () => {
           </div>
         </div>
       </section>
+      {/* Live Disaster Map */}
+<section className="bg-slate-900 py-16 px-6">
+  <div className="max-w-6xl mx-auto">
+    <h2 className="text-3xl font-bold text-center mb-8">
+      Live Disaster Map
+    </h2>
+
+    <div className="rounded-2xl overflow-hidden border border-slate-700 shadow-xl">
+      <DisasterMap />
+    </div>
+  </div>
+</section>
 
       {/* Key benefits */}
       <section className="bg-white text-gray-900 py-16 px-6">

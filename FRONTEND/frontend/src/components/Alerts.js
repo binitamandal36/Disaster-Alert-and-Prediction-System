@@ -8,20 +8,55 @@ const Alerts = () => {
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState("");
 
-  useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const data = await getAlerts();
-        setAlerts(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+ useEffect(() => {
+  const fetchAlerts = async () => {
+    try {
+      const data = await getAlerts();
+      setAlerts(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchAlerts();
-  }, []);
+  fetchAlerts();
+
+  // WebSocket connection
+  const socket = new WebSocket("ws://127.0.0.1:8000/ws/alerts/");
+
+  socket.onopen = () => {
+    console.log("WebSocket connected");
+  };
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    console.log("New alert received:", data);
+
+    setAlerts((prevAlerts) => [
+      {
+        id: Date.now(),
+        disaster: {
+          title: data.alert.title,
+          location: data.alert.location,
+        },
+        alert_level: data.alert.severity,
+        message: data.alert.message,
+      },
+      ...prevAlerts,
+    ]);
+  };
+
+  socket.onerror = (error) => {
+    console.error("WebSocket error:", error);
+  };
+
+  socket.onclose = () => {
+    console.log("WebSocket disconnected");
+  };
+
+  return () => socket.close();
+}, []);
 
   if (error) {
     return (

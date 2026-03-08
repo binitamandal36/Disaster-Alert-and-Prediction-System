@@ -20,7 +20,8 @@ export async function subscribeUser() {
     applicationServerKey: urlBase64ToUint8Array(publicKey),
   });
 
-  await fetch("http://127.0.0.1:8000/api/notifications/subscribe/", {
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
+  await fetch(`${API_BASE_URL}/notifications/subscribe/`, {
     method: "POST",
     body: JSON.stringify(subscription),
     headers: {

@@ -29,7 +29,18 @@ class AlertSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Alert
-        fields = ["id", "title", "location", "level", "message", "created_at"]
+        fields = [
+    "id",
+    "title",
+    "disaster_type",
+    "location",
+    "latitude",
+    "longitude",
+    "severity_level",
+    "risk_score",
+    "description",
+    "date_reported",
+]
 
 
 class NotificationSubscriptionSerializer(serializers.ModelSerializer):

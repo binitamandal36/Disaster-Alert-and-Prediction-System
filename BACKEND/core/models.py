@@ -2,6 +2,9 @@
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from .prediction import calculate_risk
 
 DISASTER_TYPES = [
     ("Flood", "Flood"),
@@ -26,6 +29,7 @@ class Disaster(models.Model):
     longitude = models.FloatField(null=True, blank=True)
 
     severity_level = models.IntegerField()
+    risk_score = models.IntegerField(default=0)
     description = models.TextField()
     date_reported = models.DateTimeField(auto_now_add=True)
     valid_until = models.DateField(
@@ -33,6 +37,10 @@ class Disaster(models.Model):
         blank=True,
         help_text="Date until which this disaster and its alerts are considered active.",
     )
+
+    def save(self, *args, **kwargs):
+        self.risk_score = calculate_risk(self)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.title} - {self.location}"
@@ -110,20 +118,38 @@ def create_alert(sender, instance, created, **kwargs):
             alert_level=level,
             message=f"{level} risk alert for {instance.title} in {instance.location}"
         )
-
-
+        
 @receiver(post_save, sender=Alert)
 def notify_on_alert(sender, instance, created, **kwargs):
     """
-    When a new alert is created, notify subscribers (best-effort).
+    When a new alert is created, notify subscribers and broadcast via WebSocket.
     """
+
     if not created:
         return
 
+    # Existing notification system
     try:
         from .notifications import notify_subscribers
-
         notify_subscribers(instance)
     except Exception:
-        # Never break alert creation if notifications fail.
-        return
+        pass
+
+    # NEW: WebSocket broadcast
+    try:
+        channel_layer = get_channel_layer()
+
+        async_to_sync(channel_layer.group_send)(
+            "alerts",
+            {
+                "type": "send_alert",
+                "alert": {
+                    "title": instance.disaster.title,
+                    "location": instance.disaster.location,
+                    "severity": instance.alert_level,
+                    "message": instance.message,
+                },
+            },
+        )
+    except Exception:
+        pass
