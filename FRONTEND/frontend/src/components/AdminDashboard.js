@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
+import "leaflet-defaulticon-compatibility";
 import {
   getCurrentAdmin,
   getAdminDisasters,
   getAdminAlerts,
+  getAdminSubscriptions,
   createAdminDisaster,
   updateAdminDisaster,
   deleteAdminDisaster,
@@ -10,10 +15,25 @@ import {
 } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
+const MapClickHandler = ({ setForm }) => {
+  useMapEvents({
+    click(e) {
+      setForm((prev) => ({
+        ...prev,
+        latitude: e.latlng.lat,
+        longitude: e.latlng.lng,
+      }));
+    },
+  });
+  return null;
+};
+
 const emptyForm = {
   title: "",
   disaster_type: "Flood",
   location: "",
+  latitude: "",
+  longitude: "",
   severity_level: 5,
   description: "",
   valid_until: "",
@@ -24,10 +44,12 @@ const AdminDashboard = () => {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [disasters, setDisasters] = useState([]);
   const [alerts, setAlerts] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -37,7 +59,7 @@ const AdminDashboard = () => {
           navigate("/admin/login");
           return;
         }
-        await Promise.all([loadDisasters(), loadAlerts()]);
+        await Promise.all([loadDisasters(), loadAlerts(), loadSubscriptions()]);
       } catch (err) {
         navigate("/admin/login");
       } finally {
@@ -57,6 +79,11 @@ const AdminDashboard = () => {
   const loadAlerts = async () => {
     const data = await getAdminAlerts();
     setAlerts(data);
+  };
+
+  const loadSubscriptions = async () => {
+    const data = await getAdminSubscriptions();
+    setSubscriptions(data);
   };
 
   const handleChange = (e) => {
@@ -80,15 +107,28 @@ const AdminDashboard = () => {
       if (!payload.valid_until) {
         delete payload.valid_until;
       }
+      if (payload.latitude === "") {
+        payload.latitude = null;
+      } else {
+        payload.latitude = parseFloat(payload.latitude);
+      }
+      if (payload.longitude === "") {
+        payload.longitude = null;
+      } else {
+        payload.longitude = parseFloat(payload.longitude);
+      }
 
       if (editingId) {
         await updateAdminDisaster(editingId, payload);
+        setSuccessMessage("Disaster updated successfully!");
       } else {
         await createAdminDisaster(payload);
+        setSuccessMessage("Disaster created! SMS, Email, and Push Notifications have been dispatched to subscribers.");
       }
       setForm(emptyForm);
       setEditingId(null);
       await loadDisasters();
+      setTimeout(() => setSuccessMessage(null), 6000);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -102,6 +142,8 @@ const AdminDashboard = () => {
       title: disaster.title,
       disaster_type: disaster.disaster_type,
       location: disaster.location,
+      latitude: disaster.latitude || "",
+      longitude: disaster.longitude || "",
       severity_level: disaster.severity_level,
       description: disaster.description,
        valid_until: disaster.valid_until || "",
@@ -235,6 +277,59 @@ const AdminDashboard = () => {
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Latitude
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    name="latitude"
+                    className="w-full border rounded-lg px-3 py-2"
+                    value={form.latitude}
+                    onChange={handleChange}
+                    placeholder="e.g. 28.39"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Longitude
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    name="longitude"
+                    className="w-full border rounded-lg px-3 py-2"
+                    value={form.longitude}
+                    onChange={handleChange}
+                    placeholder="e.g. 84.12"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Pick Location from Map (Click on Map)
+                </label>
+                <div className="z-0 border rounded-lg overflow-hidden" style={{ height: "250px", width: "100%" }}>
+                  <MapContainer
+                    center={[28.3949, 84.1240]} // Nepal center
+                    zoom={6}
+                    style={{ height: "100%", width: "100%", zIndex: 1 }}
+                  >
+                    <TileLayer
+                      attribution="&copy; OpenStreetMap"
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <MapClickHandler setForm={setForm} />
+                    {form.latitude && form.longitude && (
+                      <Marker position={[form.latitude, form.longitude]} />
+                    )}
+                  </MapContainer>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Valid until (optional)
@@ -295,6 +390,11 @@ const AdminDashboard = () => {
 
               {error && (
                 <p className="text-xs text-red-600 mt-1">{error}</p>
+              )}
+              {successMessage && (
+                <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded text-sm relative">
+                  <span className="block sm:inline">{successMessage}</span>
+                </div>
               )}
             </form>
 
@@ -369,6 +469,28 @@ const AdminDashboard = () => {
                   No alerts have been generated yet.
                 </p>
               )}
+            </div>
+
+            <div className="mt-6 border-t pt-4">
+              <h2 className="text-lg font-semibold mb-2">Active Subscribers</h2>
+              <p className="text-xs text-gray-600 mb-3">
+                People receiving automatic notifications when disasters occur.
+              </p>
+              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                {subscriptions.map((s) => (
+                  <div key={s.id} className="border rounded-lg px-3 py-2 bg-white shadow-sm flex flex-col gap-1">
+                    {s.email && <p className="text-sm">📧 {s.email}</p>}
+                    {s.phone && <p className="text-sm">📱 {s.phone}</p>}
+                    {s.push_subscription && <p className="text-sm">🌐 Web Push Subscribed</p>}
+                    <p className="text-[10px] text-gray-500 font-semibold mt-1">
+                      Min Level: {s.min_level} | Active: {s.is_active ? "Yes" : "No"} | Created: {new Date(s.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+                {subscriptions.length === 0 && (
+                  <p className="text-sm text-gray-500">No active subscribers found.</p>
+                )}
+              </div>
             </div>
           </div>
         </div>

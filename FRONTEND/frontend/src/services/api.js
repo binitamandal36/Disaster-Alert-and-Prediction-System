@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
+  process.env.REACT_APP_API_BASE_URL || `http://${window.location.hostname}:8000/api`;
   
 export const getDisasters = async () => {
   const response = await fetch(`${API_BASE_URL}/disasters/`);
@@ -134,6 +134,7 @@ export const getCurrentAdmin = async () => {
   const response = await fetch(`${API_BASE_URL}/admin/me/`, {
     method: "GET",
     credentials: "include",
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -147,6 +148,7 @@ export const getCurrentAdmin = async () => {
 export const getAdminDisasters = async () => {
   const response = await fetch(`${API_BASE_URL}/admin/disasters/`, {
     credentials: "include",
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -206,10 +208,24 @@ export const deleteAdminDisaster = async (id) => {
 export const getAdminAlerts = async () => {
   const response = await fetch(`${API_BASE_URL}/admin/alerts/`, {
     credentials: "include",
+    cache: "no-store",
   });
 
   if (!response.ok) {
     throw new Error("Failed to load alerts for admin.");
+  }
+
+  return response.json();
+};
+
+export const getAdminSubscriptions = async () => {
+  const response = await fetch(`${API_BASE_URL}/admin/subscriptions/`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to load subscriptions for admin.");
   }
 
   return response.json();

@@ -30,6 +30,11 @@ urlpatterns = [
         views.AdminAlertList.as_view(),
         name="admin_alerts",
     ),
+    path(
+        "api/admin/subscriptions/",
+        views.AdminSubscriptionList.as_view(),
+        name="admin_subscriptions",
+    ),
     # Public notifications
     path(
         "api/notifications/vapid-public-key/",

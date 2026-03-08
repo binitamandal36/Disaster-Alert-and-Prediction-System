@@ -20,6 +20,7 @@ from rest_framework.response import Response
 from .forms import DisasterForm
 from .models import Alert, Disaster, DISASTER_TYPES, NotificationSubscription
 from .serializers import AlertSerializer, DisasterSerializer, NotificationSubscriptionSerializer
+from .geocoding import get_coordinates
 
 from django.db.models import Q
 from django.utils import timezone
@@ -191,6 +192,14 @@ class AdminDisasterListCreate(ListCreateAPIView):
     authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def perform_create(self, serializer):
+        location = serializer.validated_data.get("location", "")
+        lat, lon = get_coordinates(location)
+        if lat is not None and lon is not None:
+            serializer.save(latitude=lat, longitude=lon)
+        else:
+            serializer.save()
+
 
 @method_decorator(csrf_exempt, name="dispatch")
 class AdminDisasterDetail(RetrieveUpdateDestroyAPIView):
@@ -203,6 +212,14 @@ class AdminDisasterDetail(RetrieveUpdateDestroyAPIView):
     authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def perform_update(self, serializer):
+        location = serializer.validated_data.get("location", "")
+        lat, lon = get_coordinates(location)
+        if lat is not None and lon is not None:
+            serializer.save(latitude=lat, longitude=lon)
+        else:
+            serializer.save()
+
 
 @method_decorator(csrf_exempt, name="dispatch")
 class AdminAlertList(ListAPIView):
@@ -212,6 +229,17 @@ class AdminAlertList(ListAPIView):
 
     queryset = Alert.objects.order_by("-created_at")
     serializer_class = AlertSerializer
+    authentication_classes = [CsrfExemptSessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class AdminSubscriptionList(ListAPIView):
+    """
+    Admin-only endpoint to list notification subscriptions.
+    """
+    queryset = NotificationSubscription.objects.all().order_by("-created_at")
+    serializer_class = NotificationSubscriptionSerializer
     authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -234,7 +262,7 @@ def notifications_vapid_public_key(request):
     public_key = os.environ.get("VAPID_PUBLIC_KEY")
     if not public_key:
         # This is a demo-only value, not suitable for production.
-        public_key = "BDEMO_VAPID_PUBLIC_KEY_FOR_COLLEGE_PROJECT_1234567890"
+        public_key = "BARpNhhpuyU1lh6ZMG3iWBccfS7upLNhwwH_FmZrFI0M-0XrQG-n8WU0rNVEIXqwlimoFJbV4yYMzYwvjnEoYFQ="
     return Response({"publicKey": public_key}, status=200)
 
 
