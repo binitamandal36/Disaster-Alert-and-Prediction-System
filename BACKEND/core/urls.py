@@ -11,6 +11,8 @@ urlpatterns = [
     path("delete/<int:id>/", views.delete_disaster, name="delete_disaster"),
     path("api/disasters/", views.disaster_api, name="disaster_api"),
     path("api/alerts/", AlertListView.as_view(), name="alerts"),
+    path("api/live-situation/", views.live_situation_api, name="live_situation"),
+    path("api/contact/", views.contact_api, name="contact_api"),
     # Admin authentication and dashboard APIs
     path("api/admin/login/", views.admin_login, name="admin_login"),
     path("api/admin/logout/", views.admin_logout, name="admin_logout"),
@@ -34,6 +36,11 @@ urlpatterns = [
         "api/admin/subscriptions/",
         views.AdminSubscriptionList.as_view(),
         name="admin_subscriptions",
+    ),
+    path(
+        "api/admin/messages/",
+        views.AdminMessageList.as_view(),
+        name="admin_messages",
     ),
     # Public notifications
     path(

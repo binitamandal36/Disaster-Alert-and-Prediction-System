@@ -18,8 +18,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .forms import DisasterForm
-from .models import Alert, Disaster, DISASTER_TYPES, NotificationSubscription
-from .serializers import AlertSerializer, DisasterSerializer, NotificationSubscriptionSerializer
+from .models import Alert, Disaster, DISASTER_TYPES, NotificationSubscription, ContactMessage
+from .serializers import AlertSerializer, DisasterSerializer, NotificationSubscriptionSerializer, ContactMessageSerializer
 from .geocoding import get_coordinates
 
 from django.db.models import Q
@@ -244,9 +244,53 @@ class AdminSubscriptionList(ListAPIView):
     permission_classes = [IsAuthenticated]
 
 
+@method_decorator(csrf_exempt, name="dispatch")
+class AdminMessageList(ListAPIView):
+    """
+    Admin-only endpoint to list user-submitted contact messages.
+    """
+    queryset = ContactMessage.objects.all().order_by("-created_at")
+    serializer_class = ContactMessageSerializer
+    authentication_classes = [CsrfExemptSessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
 # ---------------------------
 # Public notifications APIs
 # ---------------------------
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([])
+def live_situation_api(request):
+    """
+    Returns metrics for the live situation overview on the public homepage.
+    """
+    today = timezone.now().date()
+    # Active disasters (valid_until is today or in the future, or null)
+    active_disasters_count = Disaster.objects.filter(
+        Q(valid_until__isnull=True) | Q(valid_until__gte=today)
+    ).count()
+
+    # High alerts (associated disaster is still active)
+    high_alerts_count = Alert.objects.filter(
+        alert_level="HIGH"
+    ).filter(
+        Q(disaster__valid_until__isnull=True) | Q(disaster__valid_until__gte=today)
+    ).count()
+
+    # Active subscribers
+    subscribers_count = NotificationSubscription.objects.filter(is_active=True).count()
+
+    return Response(
+        {
+            "active_disasters": active_disasters_count,
+            "high_alerts": high_alerts_count,
+            "subscribers": subscribers_count,
+        },
+        status=200,
+    )
+
 
 @csrf_exempt
 @api_view(["GET"])
@@ -319,3 +363,19 @@ def notifications_unsubscribe(request):
 
     updated = qs.update(is_active=False)
     return Response({"success": True, "updated": updated}, status=200)
+
+
+@csrf_exempt
+@api_view(["POST"])
+@authentication_classes([])  # public
+@permission_classes([])
+def contact_api(request):
+    """
+    Handle incoming contact messages from the public frontend.
+    """
+    serializer = ContactMessageSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"success": True, "message": "Message sent successfully"}, status=201)
+    
+    return Response(serializer.errors, status=400)

@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginAdmin } from "../services/api";
+import { loginAdmin, getCurrentAdmin } from "../services/api";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -8,6 +8,20 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const admin = await getCurrentAdmin();
+        if (admin.isAuthenticated) {
+          navigate("/admin/dashboard");
+        }
+      } catch (err) {
+        // Ignored, user just stays on login page
+      }
+    };
+    checkAuth();
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

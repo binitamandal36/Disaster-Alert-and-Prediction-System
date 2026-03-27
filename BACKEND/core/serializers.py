@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 
-from .models import Alert, Disaster, NotificationSubscription
+from .models import Alert, Disaster, NotificationSubscription, ContactMessage
 
 
 class DisasterSerializer(serializers.ModelSerializer):
@@ -47,6 +47,7 @@ class NotificationSubscriptionSerializer(serializers.ModelSerializer):
             "email",
             "phone",
             "push_subscription",
+            "location",
             "wants_email",
             "wants_sms",
             "wants_push",
@@ -80,3 +81,9 @@ class NotificationSubscriptionSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+class ContactMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactMessage
+        fields = "__all__"

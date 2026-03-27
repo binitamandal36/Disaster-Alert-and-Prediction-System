@@ -8,6 +8,7 @@ import {
   getAdminDisasters,
   getAdminAlerts,
   getAdminSubscriptions,
+  getAdminMessages,
   createAdminDisaster,
   updateAdminDisaster,
   deleteAdminDisaster,
@@ -45,6 +46,7 @@ const AdminDashboard = () => {
   const [disasters, setDisasters] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [subscriptions, setSubscriptions] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -59,7 +61,7 @@ const AdminDashboard = () => {
           navigate("/admin/login");
           return;
         }
-        await Promise.all([loadDisasters(), loadAlerts(), loadSubscriptions()]);
+        await Promise.all([loadDisasters(), loadAlerts(), loadSubscriptions(), loadMessages()]);
       } catch (err) {
         navigate("/admin/login");
       } finally {
@@ -84,6 +86,11 @@ const AdminDashboard = () => {
   const loadSubscriptions = async () => {
     const data = await getAdminSubscriptions();
     setSubscriptions(data);
+  };
+
+  const loadMessages = async () => {
+    const data = await getAdminMessages();
+    setMessages(data);
   };
 
   const handleChange = (e) => {
@@ -489,6 +496,28 @@ const AdminDashboard = () => {
                 ))}
                 {subscriptions.length === 0 && (
                   <p className="text-sm text-gray-500">No active subscribers found.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6 border-t pt-4">
+              <h2 className="text-lg font-semibold mb-2">User Messages</h2>
+              <p className="text-xs text-gray-600 mb-3">
+                Queries and reports sent through the public Contact page.
+              </p>
+              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                {messages.map((m) => (
+                  <div key={m.id} className="border rounded-lg px-4 py-3 bg-white shadow-sm flex flex-col gap-1">
+                    <p className="font-semibold text-slate-800">{m.name} <span className="text-xs font-normal text-slate-500">({m.email})</span></p>
+                    {m.subject && <p className="text-sm font-medium text-indigo-700">Subject: {m.subject}</p>}
+                    <p className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{m.message}</p>
+                    <p className="text-[10px] text-gray-400 mt-2">
+                      Received: {new Date(m.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+                {messages.length === 0 && (
+                  <p className="text-sm text-gray-500">No messages received yet.</p>
                 )}
               </div>
             </div>

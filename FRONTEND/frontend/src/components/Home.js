@@ -3,16 +3,38 @@ import { Link } from "react-router-dom";
 import AlertBanner from "./AlertBanner";
 import NotificationSubscribe from "./NotificationSubscribe";
 import DisasterMap from "./DisasterMap";
+import { getLiveSituation } from "../services/api";
 
 const Home = () => {
   const [showAlert, setShowAlert] = useState(true);
+  const [metrics, setMetrics] = useState({
+    active_disasters: "...",
+    high_alerts: "...",
+    subscribers: "...",
+  });
 
   useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const data = await getLiveSituation();
+        setMetrics(data);
+      } catch (err) {
+        console.error("Failed to fetch live situation metrics", err);
+      }
+    };
+    fetchMetrics();
+    
+    // Poll every 30 seconds for live updates
+    const interval = setInterval(fetchMetrics, 30000);
+
     const timer = setTimeout(() => {
       setShowAlert(false);
     }, 8000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, []);
 
   return (
@@ -64,28 +86,28 @@ const Home = () => {
               <div className="grid grid-cols-3 gap-3 text-xs">
                 <div className="bg-slate-800/80 rounded-2xl p-3">
                   <p className="text-slate-400">Active disasters</p>
-                  <p className="text-2xl font-bold text-amber-300">12</p>
+                  <p className="text-2xl font-bold text-amber-300">{metrics.active_disasters}</p>
                   <p className="text-[11px] text-slate-400 mt-1">
                     Across all regions
                   </p>
                 </div>
                 <div className="bg-slate-800/80 rounded-2xl p-3">
                   <p className="text-slate-400">High alerts</p>
-                  <p className="text-2xl font-bold text-red-400">3</p>
+                  <p className="text-2xl font-bold text-red-400">{metrics.high_alerts}</p>
                   <p className="text-[11px] text-slate-400 mt-1">
                     Immediate attention
                   </p>
                 </div>
                 <div className="bg-slate-800/80 rounded-2xl p-3">
                   <p className="text-slate-400">Subscribers</p>
-                  <p className="text-2xl font-bold text-emerald-400">254</p>
+                  <p className="text-2xl font-bold text-emerald-400">{metrics.subscribers}</p>
                   <p className="text-[11px] text-slate-400 mt-1">
                     Email & SMS
                   </p>
                 </div>
               </div>
               <div className="mt-4 text-[11px] text-slate-400">
-                Simulated metrics for demo – real data comes from the Django backend.
+                Live data synced directly from the Django backend.
               </div>
             </div>
           </div>

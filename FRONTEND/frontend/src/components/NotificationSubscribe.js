@@ -13,6 +13,7 @@ function urlBase64ToUint8Array(base64String) {
 const NotificationSubscribe = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [location, setLocation] = useState("");
   const [minLevel, setMinLevel] = useState("LOW");
   const [wantsEmail, setWantsEmail] = useState(true);
   const [wantsSms, setWantsSms] = useState(false);
@@ -49,6 +50,7 @@ const NotificationSubscribe = () => {
       wants_sms: wantsSms,
       wants_push: false,
       min_level: minLevel,
+      location: location || null,
     });
   };
 
@@ -89,6 +91,7 @@ const NotificationSubscribe = () => {
         wants_sms: wantsSms,
         wants_push: true,
         min_level: minLevel,
+        location: location || null,
         push_subscription: sub.toJSON(),
       });
     } catch (e) {
@@ -135,6 +138,19 @@ const NotificationSubscribe = () => {
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Location (optional)
+              </label>
+              <input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                type="text"
+                placeholder="e.g. Dharan, Jhapa, Biratnagar"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+              />
             </div>
 
             <div className="flex flex-wrap gap-4 items-center">

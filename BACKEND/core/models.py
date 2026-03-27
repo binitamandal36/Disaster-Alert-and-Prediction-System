@@ -88,6 +88,7 @@ class NotificationSubscription(models.Model):
     email = models.EmailField(null=True, blank=True)
     phone = models.CharField(max_length=25, null=True, blank=True)
     push_subscription = models.JSONField(null=True, blank=True)
+    location = models.CharField(max_length=200, null=True, blank=True)
 
     wants_email = models.BooleanField(default=True)
     wants_sms = models.BooleanField(default=False)
@@ -153,3 +154,14 @@ def notify_on_alert(sender, instance, created, **kwargs):
         )
     except Exception:
         pass
+
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=200)
+    email = models.EmailField()
+    subject = models.CharField(max_length=200, blank=True, null=True)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.name} - {self.email}"

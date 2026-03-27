@@ -56,6 +56,16 @@ export const getAlerts = async () => {
   return response.json();
 };
 
+export const getLiveSituation = async () => {
+  const response = await fetch(`${API_BASE_URL}/live-situation/`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch live situation overview metrics");
+  }
+
+  return response.json();
+};
+
 // Public notifications APIs
 export const getVapidPublicKey = async () => {
   const response = await fetch(`${API_BASE_URL}/notifications/vapid-public-key/`);
@@ -230,3 +240,41 @@ export const getAdminSubscriptions = async () => {
 
   return response.json();
 };
+
+export const submitContactMessage = async (payload) => {
+  const response = await fetch(`${API_BASE_URL}/contact/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    let message = "Failed to send message.";
+    try {
+      const body = await response.json();
+      if (body && body.detail) message = body.detail;
+      else if (body && Object.values(body)[0]) message = Object.values(body)[0][0];
+    } catch {
+      // ignore parse error
+    }
+    throw new Error(message);
+  }
+
+  return response.json();
+};
+
+export const getAdminMessages = async () => {
+  const response = await fetch(`${API_BASE_URL}/admin/messages/`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to load messages for admin.");
+  }
+
+  return response.json();
+};
+

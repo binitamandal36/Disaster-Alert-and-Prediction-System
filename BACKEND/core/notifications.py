@@ -120,6 +120,10 @@ def notify_subscribers(alert) -> None:
         if not _should_send(alert.alert_level, sub.min_level):
             continue
 
+        if sub.location and alert.disaster.location:
+            if sub.location.strip().lower() not in alert.disaster.location.lower():
+                continue
+
         if sub.wants_email and sub.email:
             _send_email(sub.email, subject, body)
 

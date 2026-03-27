@@ -59,7 +59,7 @@ const Navbar = () => {
 
           {/* Admin */}
           <NavLink
-            to="/admin/login"
+            to="/admin/dashboard"
             className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full text-sm font-semibold text-white shadow-lg transition"
           >
             Admin
