@@ -1,5 +1,6 @@
 import json
 import os
+import requests
 from typing import Any, Dict, Optional, Tuple
 
 from django.conf import settings
@@ -52,34 +53,40 @@ def _send_email(to_email: str, subject: str, body: str) -> None:
         print(f"[EMAIL:ERROR] to={to_email} error={exc}")
 
 
-def _send_sms(to_phone: str, body: str) -> None:
+def send_sms(phone: str, message: str) -> Optional[requests.Response]:
     """
-    Uses Twilio if installed + configured; otherwise logs to console.
-    Env vars:
-      - TWILIO_ACCOUNT_SID
-      - TWILIO_AUTH_TOKEN
-      - TWILIO_FROM_NUMBER
+    sends SMS using Sparrow API
+    returns API response
+    prints response for debugging
     """
-    account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
-    auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
-    from_number = os.environ.get("TWILIO_FROM_NUMBER")
-
-    if not (account_sid and auth_token and from_number):
-        # Dev fallback
-        print(f"[SMS:DEV] to={to_phone} body={body}")
-        return
-
+    url = "https://api.sparrowsms.com/v2/sms/"
+    token = "v2_MUbvkhXWSSFns2qsoakGqUOdmmw.jznA"
+    
+    payload = {
+        "token": token,
+        "from": "Demo",
+        "to": phone,
+        "text": message
+    }
+    
     try:
-        from twilio.rest import Client  # type: ignore
+        response = requests.post(url, data=payload, timeout=10)
+        print(f"[SMS:SPARROW] Response: {response.text}")
+        return response
+    except Exception as exc:
+        print(f"[SMS:ERROR] to={phone} error={exc}")
+        return None
 
-        Client(account_sid, auth_token).messages.create(
-            body=body,
-            from_=from_number,
-            to=to_phone,
-        )
-    except Exception:
-        # Don't crash alert creation
-        print(f"[SMS:ERROR] to={to_phone}")
+
+def send_alert_sms(user: Any, message: str) -> Optional[requests.Response]:
+    """
+    extracts user.phone and sends SMS
+    """
+    if hasattr(user, 'phone') and user.phone:
+        return send_sms(user.phone, message)
+    else:
+        print("[SMS:ERROR] User does not have a valid phone number")
+        return None
 
 
 def _send_web_push(subscription: Dict[str, Any], payload: Dict[str, Any]) -> None:
@@ -128,7 +135,7 @@ def notify_subscribers(alert) -> None:
             _send_email(sub.email, subject, body)
 
         if sub.wants_sms and sub.phone:
-            _send_sms(sub.phone, body)
+            send_sms(sub.phone, body)
 
         if sub.wants_push and sub.push_subscription:
             _send_web_push(
